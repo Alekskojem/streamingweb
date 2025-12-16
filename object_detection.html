@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Розпізнавання об'єктів у відеофайлі</title>
+    <script src="cdn.jsdelivr.net"></script>
+    <script src="cdn.jsdelivr.net"></script>
+    <style>
+        body { font-family: sans-serif; text-align: center; }
+        .container { position: relative; margin: 0 auto; width: fit-content; }
+        video, canvas { border: 1px solid black; }
+        #status { margin-top: 10px; font-weight: bold; }
+        #videoElement { display: none; } /* Приховуємо відеоелемент, показуємо лише canvas */
+    </style>
+</head>
+<body>
+    <h1>Розпізнавання об'єктів у відеофайлі</h1>
+    <p id="status">Завантаження моделі...</p>
+    
+    <div class="container">
+        <canvas id="outputCanvas"></canvas>
+        <!-- Вкажіть шлях до вашого MP4 файлу -->
+        <video id="videoElement" src="cars_on_road.mp4" controls muted loop></video>
+    </div>
+
+    <script>
+        const statusElement = document.getElementById('status');
+        const videoElement = document.getElementById('videoElement');
+        const canvasElement = document.getElementById('outputCanvas');
+        const ctx = canvasElement.getContext('2d');
+        let model = undefined;
+
+        async function loadModel() {
+            model = await cocoSsd.load();
+            statusElement.innerText = "Модель готова. Завантаження відео...";
+            // Запускаємо відео автоматично після завантаження моделі
+            videoElement.style.display = 'block';
+            videoElement.play(); 
+        }
+
+        videoElement.addEventListener('loadeddata', (event) => {
+            // Встановлюємо розмір canvas, коли дані відео завантажені
+            canvasElement.width = videoElement.videoWidth;
+            canvasElement.height = videoElement.videoHeight;
+            statusElement.innerText = "Відео відтворюється. Розпізнавання...";
+            predictVideo();
+        });
+
+        async function predictVideo() {
+            // Запускаємо детекцію на поточному кадрі відео
+            const predictions = await model.detect(videoElement);
+            
+            // Малюємо поточний кадр на canvas
+            ctx.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
+
+            // Малюємо прямокутники та мітки
+            drawPredictions(predictions);
+
+            // Повторюємо процес для наступного кадру
+            requestAnimationFrame(predictVideo);
+        }
+
+        function drawPredictions(predictions) {
+            predictions.forEach(prediction => {
+                const [x, y, width, height] = prediction.bbox;
+                ctx.beginPath();
+                ctx.strokeStyle = '#00FF00'; // Зелена рамка
+                ctx.lineWidth = 2;
+                ctx.rect(x, y, width, height);
+                ctx.stroke();
+                ctx.fillStyle = '#00FF00';
+                ctx.font = '14px Arial';
+                const text = `${prediction.class} (${Math.round(prediction.score * 100)}%)`;
+                ctx.fillText(text, x, y > 10 ? y - 5 : 10);
+            });
+        }
+        
+        loadModel();
+
+    </script>
+</body>
+</html>

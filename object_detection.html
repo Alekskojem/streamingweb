@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <title>Розпізнавання об'єктів AI 2025</title>
     <!-- Використовуємо надійні версії бібліотек -->
-    <!--script src="unpkg.com"></script>
-    <script src="unpkg.com"></script> -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.5.0/dist/tf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.2/dist/coco-ssd.min.js"></script>
     <style>
@@ -73,7 +71,7 @@
             
             ctx.strokeStyle = "#00FF00";
             ctx.lineWidth = 4;
-            ctx.strokeRect(x, y, width, height); // ПРАВИЛЬНО: 4 окремі числа
+            ctx.strokeRect(x, y, width, height); 
 
             ctx.fillStyle = "#00FF00";
             ctx.font = "18px Arial";

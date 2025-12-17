@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <title>Розпізнавання об'єктів AI 2025</title>
     <!-- Використовуємо надійні версії бібліотек -->
-    <script src="unpkg.com"></script>
-    <script src="unpkg.com"></script>
+    <!--script src="unpkg.com"></script>
+    <script src="unpkg.com"></script> -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.5.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.2/dist/coco-ssd.min.js"></script>
     <style>
         body { font-family: sans-serif; text-align: center; background-color: #f4f4f4; }
         .container { position: relative; margin: 20px auto; width: fit-content; border: 4px solid #333; }
@@ -59,24 +61,26 @@
         };
 
         async function predict() {
-            if (model) {
-                // Детекція
-                const predictions = await model.detect(video);
-                
-                // Малюємо кадр
-                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    if (model && !video.paused) {
+        const predictions = await model.detect(video);
+        
+        // Малюємо відео на canvas
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-                // Малюємо рамки
-                predictions.forEach(p => {
-                    ctx.strokeStyle = "#00FF00";
-                    ctx.lineWidth = 4;
-                    ctx.strokeRect(...p.bbox);
+        // Малюємо результати
+        predictions.forEach(p => {
+            const [x, y, width, height] = p.bbox; // Розпаковуємо координати
+            
+            ctx.strokeStyle = "#00FF00";
+            ctx.lineWidth = 4;
+            ctx.strokeRect(x, y, width, height); // ПРАВИЛЬНО: 4 окремі числа
 
-                    ctx.fillStyle = "#00FF00";
-                    ctx.font = "18px Arial";
-                    ctx.fillText(`${p.class} (${Math.round(p.score * 100)}%)`, p.bbox[0], p.bbox[1] > 20 ? p.bbox[1] - 5 : 20);
-                });
-            }
+            ctx.fillStyle = "#00FF00";
+            ctx.font = "18px Arial";
+            const label = `${p.class} (${Math.round(p.score * 100)}%)`;
+            ctx.fillText(label, x, y > 20 ? y - 10 : 20);
+        });
+    }
             
             // Наступний кадр
             requestAnimationFrame(predict);
